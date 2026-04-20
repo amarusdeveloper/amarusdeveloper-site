@@ -2,86 +2,169 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Amaru's Developer | Orçamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <img src="img/1776638651147.png" alt="Logo Amaru's Developer" style="display:block;margin:0 auto 10px auto;max-width:120px;width:100%;height:auto;">
-    <h1>Amaru's Developer</h1>
-    <p class="subtitle">
-      Sites e automações para pequenos negócios
-    </p>
-    <form id="leadForm">
-      <label>Tipo de projeto</label>
-      <select name="tipo" required>
-        <option value="">Selecione</option>
-        <option>Site simples</option>
-        <option>Site + automação</option>
-      </select>
-      <label>Objetivo</label>
-      <select name="objetivo" required>
-        <option value="">Selecione</option>
-        <option>Atrair clientes</option>
-        <option>Organizar atendimento</option>
-        <option>Automatizar tarefas</option>
-      </select>
-      <label>Orçamento</label>
-      <select name="orcamento" required>
-        <option value="">Selecione</option>
-        <option>Até R$800</option>
-        <option>R$800–1500</option>
-        <option>R$1500+</option>
-      </select>
-      <label>Prazo</label>
-      <select name="prazo" required>
-        <option value="">Selecione</option>
-        <option>Urgente</option>
-        <option>Normal</option>
-        <option>Sem pressa</option>
-      </select>
-      <label>Descreva o que você precisa</label>
-      <textarea name="mensagem" placeholder="Explique seu projeto..." required></textarea>
-      <label>Seu e-mail</label>
-      <input type="email" name="email" placeholder="exemplo@email.com" required>
-      <button type="submit">Solicitar orçamento</button>
-      <div id="formMsg" style="margin-top:15px;text-align:center;"></div>
+  <div class="card">
+    <div class="header">
+      <div class="logo-wrap">
+        <img src="img/1776638651147.png" alt="Logo Amaru's Developer">
+      </div>
+      <h1>Amaru's Developer</h1>
+      <p class="subtitle">Sites e automações para pequenos negócios</p>
+    </div>
+
+    <div class="divider"><span>Solicitar orçamento</span></div>
+
+    <form id="leadForm" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="tipo">Tipo de projeto</label>
+          <select id="tipo" name="tipo" required>
+            <option value="">Selecione</option>
+            <option>Site simples</option>
+            <option>Site + automação</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="prazo">Prazo</label>
+          <select id="prazo" name="prazo" required>
+            <option value="">Selecione</option>
+            <option>Urgente</option>
+            <option>Normal</option>
+            <option>Sem pressa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="objetivo">Objetivo</label>
+          <select id="objetivo" name="objetivo" required>
+            <option value="">Selecione</option>
+            <option>Atrair clientes</option>
+            <option>Organizar atendimento</option>
+            <option>Automatizar tarefas</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="orcamento">Orçamento</label>
+          <select id="orcamento" name="orcamento" required>
+            <option value="">Selecione</option>
+            <option>Até R$800</option>
+            <option>R$800–1500</option>
+            <option>R$1500+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="mensagem">Descreva o que você precisa</label>
+        <textarea id="mensagem" name="mensagem" placeholder="Conte um pouco sobre seu negócio e o que você quer resolver..." required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="email">Seu e-mail</label>
+        <input type="email" id="email" name="email" placeholder="voce@email.com" required>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <span id="btnText">Solicitar orçamento</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+
+      <div id="formMsg"></div>
+      <div class="success-box" id="successBox">
+        ✅ Orçamento recebido!<br>
+        <span class="success-sub">Entro em contato em até 24h.</span>
+      </div>
     </form>
+
+    <p class="footer">Amaru's Developer · São Paulo, BR</p>
   </div>
+
   <script>
-    const form = document.getElementById('leadForm');
-    const msg = document.getElementById('formMsg');
+    const BACKEND_URL = 'https://amarusdeveloper-site.onrender.com'
+
+    const form       = document.getElementById('leadForm')
+    const msg        = document.getElementById('formMsg')
+    const successBox = document.getElementById('successBox')
+    const submitBtn  = document.getElementById('submitBtn')
+    const btnText    = document.getElementById('btnText')
+    const spinner    = document.getElementById('spinner')
+
+    function setLoading(on) {
+      submitBtn.disabled = on
+      btnText.textContent = on ? 'Enviando...' : 'Solicitar orçamento'
+      spinner.style.display = on ? 'block' : 'none'
+    }
+
+    function validate() {
+      const fields = form.querySelectorAll('[required]')
+      let valid = true
+      fields.forEach(f => {
+        f.classList.remove('error')
+        if (!f.value.trim()) {
+          f.classList.add('error')
+          valid = false
+        }
+      })
+      return valid
+    }
+
+    form.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('change', () => el.classList.remove('error'))
+      el.addEventListener('input',  () => el.classList.remove('error'))
+    })
+
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      msg.textContent = '';
+      e.preventDefault()
+      msg.textContent = ''
+
+      if (!validate()) {
+        msg.style.color = 'var(--error)'
+        msg.textContent = 'Preencha todos os campos.'
+        return
+      }
+
+      setLoading(true)
+
       const data = {
-        tipo: form.tipo.value,
-        objetivo: form.objetivo.value,
+        tipo:      form.tipo.value,
+        objetivo:  form.objetivo.value,
         orcamento: form.orcamento.value,
-        prazo: form.prazo.value,
-        mensagem: form.mensagem.value,
-        email: form.email.value
-      };
+        prazo:     form.prazo.value,
+        mensagem:  form.mensagem.value,
+        email:     form.email.value
+      }
+
       try {
-        const res = await fetch('https://amarusdeveloper-site.onrender.com/lead', {
+        const res    = await fetch(`${BACKEND_URL}/lead`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
-        });
-        const result = await res.json();
+        })
+        const result = await res.json()
+
         if (result.success) {
-          msg.style.color = '#22c55e';
-          msg.textContent = 'Orçamento enviado com sucesso!';
-          form.reset();
+          form.style.display = 'none'
+          successBox.classList.add('show')
         } else {
-          msg.style.color = '#f87171';
-          msg.textContent = result.error || 'Erro ao enviar.';
+          msg.style.color = 'var(--error)'
+          msg.textContent = result.error || 'Erro ao enviar. Tente novamente.'
         }
-      } catch (err) {
-        msg.style.color = '#f87171';
-        msg.textContent = 'Erro de conexão.';
+      } catch {
+        msg.style.color = 'var(--error)'
+        msg.textContent = 'Erro de conexão. Verifique e tente novamente.'
+      } finally {
+        setLoading(false)
       }
-    });
+    })
   </script>
 </body>
 </html>
