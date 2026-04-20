@@ -6,12 +6,13 @@
   --bg:      #080d14;
   --surface: #0e1620;
   --border:  #1a2535;
-  --accent:  #00e87a;
-  --accent2: #00b8ff;
+  --accent:  #00b8ff;    /* Era o verde, agora é o azul principal */
+  --accent2: #00e87a;    /* Era o azul, agora inverti para verde (opcional) */
   --text:    #e4eaf2;
   --muted:   #526070;
   --error:   #f87171;
 }
+
 
 * {
   margin: 0;
